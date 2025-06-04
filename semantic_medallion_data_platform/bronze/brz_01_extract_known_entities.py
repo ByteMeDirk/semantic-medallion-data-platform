@@ -9,7 +9,10 @@ from pyspark.sql import functions as F
 from pyspark.sql.types import *
 
 from semantic_medallion_data_platform.common.log_handler import get_logger
-from semantic_medallion_data_platform.common.pyspark import composite_to_hash
+from semantic_medallion_data_platform.common.pyspark import (
+    composite_to_hash,
+    create_spark_session,
+)
 from semantic_medallion_data_platform.config.env import get_db_config
 
 logger = get_logger(__name__)
@@ -22,26 +25,6 @@ DATASET_SCHEMA = StructType(
         StructField("entity_description", StringType(), True),
     ]
 )
-
-
-# Register the composite_to_hash function as a UDF
-
-
-def create_spark_session(app_name: str) -> SparkSession:
-    """Create a Spark session for local development.
-
-    Args:
-        app_name: The name of the Spark application.
-
-    Returns:
-        A configured SparkSession object.
-    """
-    return (
-        SparkSession.builder.appName(app_name)
-        .master("local[*]")  # Use local mode with all available cores
-        .config("spark.jars.packages", "org.postgresql:postgresql:42.6.0")
-        .getOrCreate()
-    )
 
 
 def main() -> None:

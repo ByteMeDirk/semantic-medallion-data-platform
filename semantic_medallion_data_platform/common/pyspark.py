@@ -6,6 +6,25 @@ import hashlib
 import logging
 from typing import Any
 
+from pyspark.sql import SparkSession
+
+
+def create_spark_session(app_name: str) -> SparkSession:
+    """Create a Spark session for local development.
+
+    Args:
+        app_name: The name of the Spark application.
+
+    Returns:
+        A configured SparkSession object.
+    """
+    return (
+        SparkSession.builder.appName(app_name)
+        .master("local[*]")  # Use local mode with all available cores
+        .config("spark.jars.packages", "org.postgresql:postgresql:42.6.0")
+        .getOrCreate()
+    )
+
 
 def composite_to_hash(*columns: Any) -> str:
     """

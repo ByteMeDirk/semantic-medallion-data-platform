@@ -154,6 +154,24 @@ ingest.from_csv("path/to/file.csv", "destination_table")
 
 ### Silver Layer
 
+#### Using the Silver Layer Scripts
+
+1. **Transform and Extract Entities from NewsAPI Articles**:
+
+   ```bash
+   python -m semantic_medallion_data_platform.silver.slv_02_transform_nlp_newsapi
+   ```
+
+   This script:
+    - Reads news articles from the bronze.newsapi table
+    - Copies the raw articles to the silver.newsapi table
+    - Uses spaCy NLP to extract named entities (locations, organizations, persons) from article text
+    - Normalizes entity types (e.g., converts 'GPE' to 'LOC')
+    - Removes duplicate entities
+    - Stores extracted entities in the silver.newsapi_entities table
+
+#### Programmatic Access
+
 To process data from Bronze to Silver:
 
 ```python

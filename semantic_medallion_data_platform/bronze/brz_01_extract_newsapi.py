@@ -5,15 +5,17 @@ processes them, and writes them to a PostgreSQL database in the bronze schema.
 """
 import argparse
 from datetime import datetime, timedelta
-from typing import Any, Dict, List
+from typing import Dict, List
 
 from newsapi import NewsApiClient
-from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql.types import *
 
 from semantic_medallion_data_platform.common.log_handler import get_logger
-from semantic_medallion_data_platform.common.pyspark import composite_to_hash
+from semantic_medallion_data_platform.common.pyspark import (
+    composite_to_hash,
+    create_spark_session,
+)
 from semantic_medallion_data_platform.config.env import get_db_config, get_env_var
 
 logger = get_logger(__name__)
@@ -34,23 +36,6 @@ NEWSAPI_SCHEMA = StructType(
         StructField("ingestion_timestamp", TimestampType(), True),
     ]
 )
-
-
-def create_spark_session(app_name: str) -> SparkSession:
-    """Create a Spark session for local development.
-
-    Args:
-        app_name: The name of the Spark application.
-
-    Returns:
-        A configured SparkSession object.
-    """
-    return (
-        SparkSession.builder.appName(app_name)
-        .master("local[*]")  # Use local mode with all available cores
-        .config("spark.jars.packages", "org.postgresql:postgresql:42.6.0")
-        .getOrCreate()
-    )
 
 
 def fetch_news_for_entity(

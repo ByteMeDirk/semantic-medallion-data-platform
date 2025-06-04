@@ -28,6 +28,10 @@ The Bronze layer contains raw data ingested from various sources with minimal or
 - Local filesystem: `data/bronze`
 - PostgreSQL schema: `bronze`
 
+### Data Sources:
+- NewsAPI articles
+- Known entities (organizations, locations, persons)
+
 ## Silver Layer
 
 The Silver layer contains cleansed, validated, and transformed data that is ready for analysis.
@@ -40,11 +44,17 @@ The Silver layer contains cleansed, validated, and transformed data that is read
 - Duplicate records removed
 - Type conversions applied
 - Business keys established
+- Natural Language Processing (NLP) transformations applied
 
 ### Storage:
 
 - Local filesystem: `data/silver`
 - PostgreSQL schema: `silver`
+
+### Processes:
+- Entity extraction from news articles using spaCy
+- Entity normalization and deduplication
+- Entity linking with known entities
 
 ## Gold Layer
 
