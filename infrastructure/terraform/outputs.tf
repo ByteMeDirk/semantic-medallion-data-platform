@@ -34,7 +34,7 @@ output "postgres_user" {
 output "postgres_password" {
   description = "The password for connecting to the PostgreSQL database (sensitive)"
   value       = digitalocean_database_user.user.password
-  sensitive   = false
+  sensitive   = true
 }
 
 # The name of the PostgreSQL database
