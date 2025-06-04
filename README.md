@@ -12,14 +12,14 @@ This project implements a medallion architecture for data lakes, which organizes
 
 ## Tech Stack
 
-- **Data Processing**: PySpark, Delta Lake
+- **Data Processing**: PySpark
 - **Database**: PostgreSQL
-- **Orchestration**: Prefect
-- **Transformation**: dbt
-- **Data Quality**: Great Expectations
+- **Orchestration**: None
+- **Transformation**: pyspark
 - **Reporting & Visualization**: Metabase
 - **Local Development**: Docker, Poetry
 - **External APIs**: NewsAPI
+- **Infrastructure as Code**: Terraform
 
 ## Project Structure
 
@@ -29,6 +29,13 @@ semantic-medallion-data-platform/
 ├── data/                         # Data files
 │   └── known_entities/           # Known entities data files
 ├── docs/                         # Documentation
+├── infrastructure/               # Infrastructure as Code
+│   └── terraform/                # Terraform configuration for Digital Ocean
+│       ├── main.tf               # Main Terraform configuration
+│       ├── variables.tf          # Variable definitions
+│       ├── outputs.tf            # Output definitions
+│       ├── terraform.tfvars.example # Example variables file
+│       └── setup.sh              # Setup script for Terraform
 ├── semantic_medallion_data_platform/  # Main package
 │   ├── bronze/                   # Bronze layer processing
 │   │   ├── brz_01_extract_newsapi.py        # Extract news articles from NewsAPI
@@ -182,6 +189,90 @@ This will:
 ## Contributing
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+
+## Infrastructure Setup with Terraform
+
+This project uses Terraform to manage infrastructure on Digital Ocean, including a PostgreSQL database. Follow these steps to set up the infrastructure:
+
+### Prerequisites
+
+- [Terraform](https://www.terraform.io/downloads.html) (version 1.0.0 or later)
+- [Digital Ocean account](https://www.digitalocean.com/)
+- [Digital Ocean API token](https://cloud.digitalocean.com/account/api/tokens)
+
+### Setup Instructions
+
+1. Navigate to the Terraform directory:
+   ```bash
+   cd infrastructure/terraform
+   ```
+
+2. Create a `terraform.tfvars` file from the example:
+   ```bash
+   cp terraform.tfvars.example terraform.tfvars
+   ```
+
+3. Edit the `terraform.tfvars` file to add your Digital Ocean API token:
+   ```bash
+   # Open with your favorite editor
+   nano terraform.tfvars
+   ```
+
+4. Initialize Terraform:
+   ```bash
+   terraform init
+   ```
+
+5. Plan the infrastructure changes:
+   ```bash
+   terraform plan -out=tfplan
+   ```
+
+6. Apply the infrastructure changes:
+   ```bash
+   terraform apply tfplan
+   ```
+
+7. After successful application, Terraform will output connection details for your PostgreSQL database:
+   - Database host
+   - Database port
+   - Database name
+   - Database user
+   - Database password (sensitive)
+   - Database URI (sensitive)
+
+### Infrastructure Components
+
+The Terraform configuration creates the following resources on Digital Ocean:
+
+- **PostgreSQL Database Cluster**:
+  - Version: PostgreSQL 15
+  - Size: db-s-1vcpu-1gb (1 vCPU, 1GB RAM)
+  - Region: Configurable (default: London - lon1)
+  - Node Count: 1
+
+- **Database**:
+  - Name: semantic_data_platform
+
+- **Database User**:
+  - Name: semantic_app_user
+
+### Managing Infrastructure
+
+- To update the infrastructure after making changes to the Terraform files:
+  ```bash
+  terraform plan -out=tfplan   # Preview changes
+  terraform apply tfplan       # Apply changes
+  ```
+
+- To destroy the infrastructure when no longer needed:
+  ```bash
+  terraform destroy
+  ```
+
+For more detailed information about the infrastructure setup, see [INFRASTRUCTURE.md](docs/INFRASTRUCTURE.md).
+
+For deployment instructions, see [DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 ## License
 
