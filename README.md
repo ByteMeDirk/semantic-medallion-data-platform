@@ -34,6 +34,9 @@ semantic-medallion-data-platform/
 │   │   ├── brz_01_extract_newsapi.py        # Extract news articles from NewsAPI
 │   │   └── brz_01_extract_known_entities.py # Extract known entities from CSV files
 │   ├── silver/                   # Silver layer processing
+│   │   ├── slv_02_transform_nlp_known_entities.py  # Extract entities from known entities descriptions
+│   │   ├── slv_02_transform_nlp_newsapi.py         # Extract entities from news articles
+│   │   └── slv_03_transform_entity_to_entity_mapping.py  # Create entity mappings
 │   ├── gold/                     # Gold layer processing
 │   ├── common/                   # Shared utilities
 │   └── config/                   # Configuration
@@ -130,6 +133,50 @@ This will:
 1. Read entity data from CSV files in the specified directory
 2. Process and transform the data
 3. Store the entities in the bronze.known_entities table
+
+### Running Silver Layer Processes
+
+#### Processing Known Entities with NLP
+
+To extract entities from known entities descriptions:
+
+```bash
+cd semantic-medallion-data-platform
+python -m semantic_medallion_data_platform.silver.slv_02_transform_nlp_known_entities
+```
+
+This will:
+1. Copy known entities from bronze.known_entities to silver.known_entities
+2. Extract entities (locations, organizations, persons) from entity descriptions using NLP
+3. Store the extracted entities in the silver.known_entities_entities table
+
+#### Processing News Articles with NLP
+
+To extract entities from news articles:
+
+```bash
+cd semantic-medallion-data-platform
+python -m semantic_medallion_data_platform.silver.slv_02_transform_nlp_newsapi
+```
+
+This will:
+1. Copy news articles from bronze.newsapi to silver.newsapi
+2. Extract entities from article title, description, and content using NLP
+3. Store the extracted entities in the silver.newsapi_entities table
+
+#### Creating Entity Mappings
+
+To create entity-to-entity and entity-to-source mappings:
+
+```bash
+cd semantic-medallion-data-platform
+python -m semantic_medallion_data_platform.silver.slv_03_transform_entity_to_entity_mapping
+```
+
+This will:
+1. Create entity-to-source mappings between known_entities_entities and newsapi_entities
+2. Create entity-to-entity mappings within known_entities_entities
+3. Store the mappings in silver.entity_to_source_mapping and silver.entity_to_entity_mapping tables
 
 
 ## Contributing

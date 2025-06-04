@@ -24,6 +24,7 @@ dotenv = "^0.9.9"
 spacy = "^3.8.7"
 textblob = "^0.19.0"
 newsapi-python = "^0.2.7"
+rapidfuzz = "^3.13.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.3.1"
