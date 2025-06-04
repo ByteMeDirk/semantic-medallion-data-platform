@@ -1,6 +1,7 @@
 # Development Guide
 
-This guide provides instructions for setting up and working with the Semantic Medallion Data Platform in a development environment.
+This guide provides instructions for setting up and working with the Semantic Medallion Data Platform in a development
+environment.
 
 ## Prerequisites
 
@@ -9,8 +10,6 @@ Before you begin, ensure you have the following installed:
 - Python 3.9+
 - [Poetry](https://python-poetry.org/docs/#installation)
 - [Docker](https://docs.docker.com/get-docker/) and Docker Compose
-- [Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli) (for infrastructure deployment)
-- [Google Cloud SDK](https://cloud.google.com/sdk/docs/install) (for GCP deployment)
 
 ## Initial Setup
 
@@ -35,8 +34,6 @@ Before you begin, ensure you have the following installed:
 The project includes a Docker Compose configuration that sets up a local development environment with:
 
 - PostgreSQL database
-- GCS emulator
-- Spark cluster (master and worker)
 
 To start the local environment:
 
@@ -69,11 +66,8 @@ POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
 POSTGRES_DB=medallion
 
-# GCS Emulator
-GCS_EMULATOR_HOST=http://localhost:4443
-
-# Spark
-SPARK_MASTER_URL=spark://localhost:7077
+# API Keys
+NEWSAPI_KEY=your_newsapi_key_here  # Get your key from https://newsapi.org/
 ```
 
 ## Running Tests
@@ -118,7 +112,35 @@ The project uses several tools to maintain code quality:
 
 ### Bronze Layer
 
-To ingest data into the Bronze layer:
+#### Using the Bronze Layer Scripts
+
+The project includes scripts for ingesting data into the Bronze layer:
+
+1. **Extract News Articles from NewsAPI**:
+
+   ```bash
+   python -m semantic_medallion_data_platform.bronze.brz_01_extract_newsapi --days_back 7
+   ```
+
+   This script:
+    - Fetches known entities from the database
+    - Queries NewsAPI for articles mentioning each entity
+    - Stores the articles in the bronze.newsapi table
+
+2. **Extract Known Entities**:
+
+   ```bash
+   python -m semantic_medallion_data_platform.bronze.brz_01_extract_known_entities --raw_data_filepath data/known_entities/
+   ```
+
+   This script:
+    - Reads entity data from CSV files in the specified directory
+    - Processes and transforms the data
+    - Stores the entities in the bronze.known_entities table
+
+#### Programmatic Access
+
+To ingest data into the Bronze layer programmatically:
 
 ```python
 from semantic_medallion_data_platform.bronze import ingest
@@ -149,43 +171,15 @@ from semantic_medallion_data_platform.gold import aggregate
 aggregate.silver_to_gold("source_table", "destination_table")
 ```
 
-## Infrastructure Deployment
-
-To deploy the infrastructure to GCP:
-
-1. Authenticate with Google Cloud:
-   ```bash
-   gcloud auth application-default login
-   ```
-
-2. Initialize Terraform:
-   ```bash
-   cd infrastructure/environments/dev
-   terraform init
-   ```
-
-3. Plan the deployment:
-   ```bash
-   terraform plan -var="project_id=your-project-id"
-   ```
-
-4. Apply the changes:
-   ```bash
-   terraform apply -var="project_id=your-project-id"
-   ```
 
 ## Troubleshooting
 
 ### Common Issues
 
 1. **Docker services not starting**:
-   - Check Docker logs: `docker-compose logs`
-   - Ensure ports are not already in use
+    - Check Docker logs: `docker-compose logs`
+    - Ensure ports are not already in use
 
-2. **Terraform deployment failures**:
-   - Verify GCP authentication: `gcloud auth list`
-   - Check project permissions
-
-3. **Poetry dependency issues**:
-   - Update Poetry: `poetry self update`
-   - Clear cache: `poetry cache clear pypi --all`
+2. **Poetry dependency issues**:
+    - Update Poetry: `poetry self update`
+    - Clear cache: `poetry cache clear pypi --all`

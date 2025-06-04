@@ -46,9 +46,10 @@ def get_db_config() -> dict:
         A dictionary containing the database configuration.
     """
     return {
-        "host": get_env_var("DB_HOST", "localhost"),
-        "port": get_env_var("DB_PORT", "5432"),
-        "database": get_env_var("DB_NAME", "postgres"),
-        "user": get_env_var("DB_USER", "postgres"),
-        "password": get_env_var("DB_PASSWORD", "postgres"),
+        "host": get_env_var("DB_HOST"),
+        "port": get_env_var("DB_PORT"),
+        "database": get_env_var("DB_NAME"),
+        "user": get_env_var("DB_USER"),
+        "password": get_env_var("DB_PASSWORD"),
+        "newsapi_key": get_env_var("NEWSAPI_KEY"),
     }

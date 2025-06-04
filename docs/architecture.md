@@ -2,7 +2,8 @@
 
 ## Overview
 
-The medallion architecture is a data organization framework that structures data into three distinct layers, each with its own purpose and characteristics:
+The medallion architecture is a data organization framework that structures data into three distinct layers, each with
+its own purpose and characteristics:
 
 1. **Bronze Layer (Raw Data)**
 2. **Silver Layer (Validated Data)**
@@ -15,6 +16,7 @@ This architecture provides a clear separation of concerns and enables efficient 
 The Bronze layer contains raw data ingested from various sources with minimal or no transformations.
 
 ### Characteristics:
+
 - Raw, unprocessed data
 - Exact copy of source data
 - Immutable
@@ -22,14 +24,16 @@ The Bronze layer contains raw data ingested from various sources with minimal or
 - Full history preserved
 
 ### Storage:
-- GCS bucket: `{project_id}-bronze`
-- BigQuery dataset: `bronze`
+
+- Local filesystem: `data/bronze`
+- PostgreSQL schema: `bronze`
 
 ## Silver Layer
 
 The Silver layer contains cleansed, validated, and transformed data that is ready for analysis.
 
 ### Characteristics:
+
 - Validated and cleansed data
 - Standardized schemas
 - Data quality checks applied
@@ -38,14 +42,17 @@ The Silver layer contains cleansed, validated, and transformed data that is read
 - Business keys established
 
 ### Storage:
-- GCS bucket: `{project_id}-silver`
-- BigQuery dataset: `silver`
+
+- Local filesystem: `data/silver`
+- PostgreSQL schema: `silver`
 
 ## Gold Layer
 
-The Gold layer contains business-level aggregates and metrics that are ready for consumption by end-users and applications.
+The Gold layer contains business-level aggregates and metrics that are ready for consumption by end-users and
+applications.
 
 ### Characteristics:
+
 - Business-level aggregates
 - Denormalized for query performance
 - Optimized for specific use cases
@@ -53,8 +60,9 @@ The Gold layer contains business-level aggregates and metrics that are ready for
 - Often includes dimensional models
 
 ### Storage:
-- GCS bucket: `{project_id}-gold`
-- BigQuery dataset: `gold`
+
+- Local filesystem: `data/gold`
+- PostgreSQL schema: `gold`
 
 ## Data Flow
 

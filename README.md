@@ -1,6 +1,6 @@
 # Semantic Medallion Data Platform
 
-A modern data platform implementing the medallion architecture on Google Cloud Platform.
+A modern data platform implementing the medallion architecture with local processing.
 
 ## Architecture Overview
 
@@ -13,24 +13,25 @@ This project implements a medallion architecture for data lakes, which organizes
 ## Tech Stack
 
 - **Data Processing**: PySpark, Delta Lake
-- **Cloud Infrastructure**: Google Cloud Platform (GCS, BigQuery)
+- **Database**: PostgreSQL
 - **Orchestration**: Prefect
 - **Transformation**: dbt
 - **Data Quality**: Great Expectations
 - **Local Development**: Docker, Poetry
-- **Infrastructure as Code**: Terraform
+- **External APIs**: NewsAPI
 
 ## Project Structure
 
 ```
 semantic-medallion-data-platform/
 ├── .github/                      # GitHub Actions workflows
+├── data/                         # Data files
+│   └── known_entities/           # Known entities data files
 ├── docs/                         # Documentation
-├── infrastructure/               # Terraform configurations
-│   ├── environments/             # Environment-specific configurations
-│   └── modules/                  # Reusable Terraform modules
 ├── semantic_medallion_data_platform/  # Main package
 │   ├── bronze/                   # Bronze layer processing
+│   │   ├── brz_01_extract_newsapi.py        # Extract news articles from NewsAPI
+│   │   └── brz_01_extract_known_entities.py # Extract known entities from CSV files
 │   ├── silver/                   # Silver layer processing
 │   ├── gold/                     # Gold layer processing
 │   ├── common/                   # Shared utilities
@@ -49,8 +50,6 @@ semantic-medallion-data-platform/
 - Python 3.9+
 - [Poetry](https://python-poetry.org/docs/#installation)
 - [Docker](https://docs.docker.com/get-docker/)
-- [Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli)
-- Google Cloud account with appropriate permissions
 
 ### Installation
 
@@ -75,20 +74,24 @@ semantic-medallion-data-platform/
    cp .env.example .env
    ```
 
-   Edit the `.env` file to set your database credentials and other environment variables.
+   Edit the `.env` file to set your database credentials and other environment variables. Make sure to set your NewsAPI key if you plan to use the news article extraction functionality:
+   ```
+   NEWSAPI_KEY=your_newsapi_key_here
+   ```
+
+   You can obtain a NewsAPI key by signing up at [https://newsapi.org/](https://newsapi.org/).
 
 ### Local Development
 
 Start the local development environment:
 
 ```bash
+cd docker
 docker-compose up -d
 ```
 
 This will start:
 - Local PostgreSQL database
-- Local GCS emulator
-- Other required services
 
 ### Running Tests
 
@@ -96,18 +99,36 @@ This will start:
 poetry run pytest
 ```
 
-### Deploying to GCP
+### Running Bronze Layer Processes
 
-1. Initialize Terraform:
-   ```bash
-   cd infrastructure/environments/dev
-   terraform init
-   ```
+#### Extracting News Articles from NewsAPI
 
-2. Apply Terraform configuration:
-   ```bash
-   terraform apply
-   ```
+To extract news articles for known entities:
+
+```bash
+cd semantic-medallion-data-platform
+python -m semantic_medallion_data_platform.bronze.brz_01_extract_newsapi --days_back 7
+```
+
+This will:
+1. Fetch known entities from the database
+2. Query NewsAPI for articles mentioning each entity
+3. Store the articles in the bronze.newsapi table
+
+#### Extracting Known Entities
+
+To load known entities from CSV files:
+
+```bash
+cd semantic-medallion-data-platform
+python -m semantic_medallion_data_platform.bronze.brz_01_extract_known_entities --raw_data_filepath data/known_entities/
+```
+
+This will:
+1. Read entity data from CSV files in the specified directory
+2. Process and transform the data
+3. Store the entities in the bronze.known_entities table
+
 
 ## Contributing
 

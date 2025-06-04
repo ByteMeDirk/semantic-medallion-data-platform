@@ -10,7 +10,7 @@ logger = get_logger(__name__)
 
 
 def create_spark_session(app_name: str) -> SparkSession:
-    """Create a Spark session connected to the Docker Spark cluster.
+    """Create a Spark session for local development.
 
     Args:
         app_name: The name of the Spark application.
@@ -20,7 +20,7 @@ def create_spark_session(app_name: str) -> SparkSession:
     """
     return (
         SparkSession.builder.appName(app_name)
-        .master("spark://spark-master:7077")
+        .master("local[*]")  # Use local mode with all available cores
         .config("spark.sql.warehouse.dir", "/tmp/spark-warehouse")
         .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
         .config(
