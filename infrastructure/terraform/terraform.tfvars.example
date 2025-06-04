@@ -1,0 +1,15 @@
+# Example Terraform variables file
+# Copy this file to terraform.tfvars and fill in your actual values
+
+# Required: Digital Ocean API Token
+# Generate from https://cloud.digitalocean.com/account/api/tokens
+do_token = ""
+
+# Optional: Override default region if needed
+# region = "lon1"
+
+# Optional: Override default project name if needed
+# project_name = "semantic-data-platform"
+
+# Optional: Set environment
+# environment = "dev" # Options: dev, staging, prod
