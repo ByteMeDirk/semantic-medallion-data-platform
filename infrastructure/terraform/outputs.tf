@@ -49,5 +49,5 @@ output "postgres_database" {
 output "postgres_uri" {
   description = "The full URI for connecting to the PostgreSQL database (sensitive)"
   value       = digitalocean_database_cluster.postgres.uri
-  sensitive   = false
+  sensitive   = true
 }
