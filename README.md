@@ -17,6 +17,7 @@ This project implements a medallion architecture for data lakes, which organizes
 - **Orchestration**: Prefect
 - **Transformation**: dbt
 - **Data Quality**: Great Expectations
+- **Reporting & Visualization**: Metabase
 - **Local Development**: Docker, Poetry
 - **External APIs**: NewsAPI
 
@@ -92,6 +93,7 @@ docker-compose up -d
 
 This will start:
 - Local PostgreSQL database
+- Metabase (data visualization and reporting tool) accessible at http://localhost:3000
 
 ### Running Tests
 

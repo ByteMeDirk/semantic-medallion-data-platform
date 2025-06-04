@@ -34,6 +34,9 @@ Before you begin, ensure you have the following installed:
 The project includes a Docker Compose configuration that sets up a local development environment with:
 
 - PostgreSQL database
+- Metabase (data visualization and reporting tool)
+
+Metabase provides a user-friendly interface for creating reports and dashboards based on the data in the PostgreSQL database. It can be accessed at http://localhost:3000 after starting the Docker environment.
 
 To start the local environment:
 
