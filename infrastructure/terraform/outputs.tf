@@ -34,7 +34,7 @@ output "postgres_user" {
 output "postgres_password" {
   description = "The password for connecting to the PostgreSQL database (sensitive)"
   value       = digitalocean_database_user.user.password
-  sensitive   = false
+  sensitive   = true
 }
 
 # The name of the PostgreSQL database
@@ -49,5 +49,5 @@ output "postgres_database" {
 output "postgres_uri" {
   description = "The full URI for connecting to the PostgreSQL database (sensitive)"
   value       = digitalocean_database_cluster.postgres.uri
-  sensitive   = false
+  sensitive   = true
 }
