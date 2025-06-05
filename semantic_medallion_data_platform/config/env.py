@@ -51,5 +51,14 @@ def get_db_config() -> dict:
         "database": get_env_var("DB_NAME"),
         "user": get_env_var("DB_USER"),
         "password": get_env_var("DB_PASSWORD"),
-        "newsapi_key": get_env_var("NEWSAPI_KEY"),
     }
+
+
+def get_newsapi_key() -> str:
+    """
+    Get the News API key from environment variables.
+
+    Returns:
+        The News API key.
+    """
+    return get_env_var("NEWSAPI_KEY")
