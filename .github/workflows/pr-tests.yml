@@ -40,6 +40,9 @@ jobs:
     - name: Install dependencies
       run: poetry install --no-interaction
 
+    - name: Install Spacy
+      run: poetry run python -m spacy download en_core_web_lg
+
     - name: Run tests
       run: poetry run pytest
       env:
