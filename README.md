@@ -10,6 +10,87 @@ This project implements a medallion architecture for data lakes, which organizes
 2. **Silver Layer (Validated)**: Cleansed, validated, and transformed data
 3. **Gold Layer (Business)**: Business-level aggregates and metrics ready for consumption
 
+### Data Pipeline Architecture
+
+```mermaid
+graph TD
+    %% Bronze Layer
+    subgraph "Bronze Layer"
+        B1[brz_01_extract_newsapi.py]
+        B2[brz_01_extract_known_entities.py]
+    end
+
+    %% Silver Layer
+    subgraph "Silver Layer"
+        S1[slv_02_transform_nlp_known_entities.py]
+        S2[slv_02_transform_nlp_newsapi.py]
+        S3[slv_03_transform_entity_to_entity_mapping.py]
+    end
+
+    %% Gold Layer
+    subgraph "Gold Layer"
+        G1[gld_04_load_entities.py]
+        G2[gld_04_load_newsapi.py]
+    end
+
+    %% Data Sources
+    NewsAPI[NewsAPI] --> B1
+    KnownEntitiesCSV[Known Entities CSV] --> B2
+
+    %% Bronze to Silver
+    B1 --> |bronze.newsapi| S2
+    B2 --> |bronze.known_entities| S1
+
+    %% Silver Processing
+    S1 --> |silver.known_entities_entities| S3
+    S2 --> |silver.newsapi_entities| S3
+
+    %% Silver to Gold
+    S1 --> |silver.known_entities| G1
+    S1 --> |silver.known_entities| G2
+    S3 --> |silver.entity_to_entity_mapping| G1
+    S3 --> |silver.entity_to_source_mapping| G2
+    S2 --> |silver.newsapi| G2
+
+    %% Gold to Reporting
+    G1 --> |gold.entity_affiliations_complete| Metabase[Metabase Dashboards]
+    G2 --> |gold.entity_to_newsapi| Metabase
+end
+```
+
+### System Architecture
+
+```mermaid
+graph LR
+    %% External Systems
+    NewsAPI[NewsAPI]
+    CSVFiles[CSV Files]
+
+    %% Data Processing
+    PySpark[PySpark Processing]
+
+    %% Storage
+    PostgreSQL[PostgreSQL Database]
+
+    %% Visualization
+    Metabase[Metabase]
+
+    %% Flow
+    NewsAPI --> PySpark
+    CSVFiles --> PySpark
+    PySpark --> PostgreSQL
+    PostgreSQL --> Metabase
+
+    %% Layers within PostgreSQL
+    subgraph PostgreSQL
+        Bronze[Bronze Schema]
+        Silver[Silver Schema]
+        Gold[Gold Schema]
+        Bronze --> Silver
+        Silver --> Gold
+    end
+```
+
 ## Tech Stack
 
 - **Data Processing**: PySpark
@@ -182,9 +263,43 @@ python -m semantic_medallion_data_platform.silver.slv_03_transform_entity_to_ent
 
 This will:
 1. Create entity-to-source mappings between known_entities_entities and newsapi_entities
-2. Create entity-to-entity mappings within known_entities_entities
+2. Create entity-to-entity mappings within known_entities_entities using fuzzy matching
 3. Store the mappings in silver.entity_to_source_mapping and silver.entity_to_entity_mapping tables
 
+The entity mapping process uses fuzzy matching with RapidFuzz to identify similar entities across different data sources. This enables semantic connections between entities even when there are slight variations in naming or formatting.
+
+### Running Gold Layer Processes
+
+#### Creating Entity Affiliations Wide Table
+
+To create a comprehensive entity affiliations table for reporting:
+
+```bash
+cd semantic-medallion-data-platform
+python -m semantic_medallion_data_platform.gold.gld_04_load_entities
+```
+
+This will:
+1. Join entity-to-entity mappings with known entities data
+2. Create a wide table with entity information and their fuzzy match affiliations
+3. Create a bidirectional relationship table for complete entity affiliation analysis
+4. Store the results in gold.entity_affiliations and gold.entity_affiliations_complete tables
+
+#### Creating Entity to NewsAPI Source Resolution
+
+To create a table mapping entities to news sources:
+
+```bash
+cd semantic-medallion-data-platform
+python -m semantic_medallion_data_platform.gold.gld_04_load_newsapi
+```
+
+This will:
+1. Join entity-to-source mappings with known entities and NewsAPI data
+2. Create a wide table with entity information and their mentions in news sources
+3. Store the results in gold.entity_to_newsapi table
+
+These gold layer tables provide the foundation for the analytics and visualizations in Metabase dashboards, enabling comprehensive entity analysis and news source insights.
 
 ## Contributing
 
@@ -273,6 +388,61 @@ The Terraform configuration creates the following resources on Digital Ocean:
 For more detailed information about the infrastructure setup, see [INFRASTRUCTURE.md](docs/INFRASTRUCTURE.md).
 
 For deployment instructions, see [DEPLOYMENT.md](docs/DEPLOYMENT.md).
+
+## Visualization and Reporting
+
+The Semantic Medallion Data Platform includes built-in visualization and reporting capabilities using Metabase. The gold layer tables are designed to be easily consumed by Metabase for creating dashboards and reports.
+
+### Metabase Dashboards
+
+The platform includes pre-configured Metabase dashboards for entity analysis and insights:
+
+#### Entity Analysis Dashboard
+
+This dashboard provides comprehensive analysis of entities and their relationships:
+
+![Entity Analysis Dashboard](data/screenshots/Metabase_Dashboard_1.png)
+
+#### Entity NewsAPI Insights Dashboard
+
+This dashboard focuses on insights derived from news articles mentioning entities:
+
+![Entity NewsAPI Insights Dashboard](data/screenshots/Metabase_Dashboard_2.png)
+
+### Analytics Capabilities
+
+The platform provides a rich set of analytics capabilities through SQL queries that can be used in Metabase dashboards:
+
+#### Entity Analysis Queries
+
+- **Entity Information**: Basic information about entities
+- **Entity Affiliations**: Affiliated entities based on fuzzy matching
+- **Entity Affiliations by Type**: Count of affiliated entities by type
+- **Entity Affiliations Over Time**: Distribution of entity affiliations over time
+- **Entity News Sources**: News sources mentioning specific entities
+- **Top Entities by News Mentions**: Entities with the most news mentions
+- **Entity Relationship Network**: Network visualization of entity relationships
+
+#### Entity NewsAPI Insights Queries
+
+- **Entity Match Quality Distribution**: Distribution of match quality scores
+- **Entity News Source Timeline**: Timeline of news sources mentioning entities
+- **News Source Distribution by Entity Type**: Distribution of entity types across news sources
+- **Entity Affiliation Network Metrics**: Network metrics for entity affiliations
+- **Entity Mention Frequency Over Time**: Frequency of entity mentions over time
+- **Entity Similarity Analysis**: Identification of similar entities based on match scores
+- **News Source Influence**: Influence of news sources based on entity coverage
+- **Entity Affiliation Comparison**: Comparison of affiliations between entities
+- **Entity Mention Context Analysis**: Analysis of the context of entity mentions
+- **Entity Type Correlation**: Correlation between different entity types
+
+These queries are stored in the `data/metabase_questions/` directory and can be imported into Metabase for creating custom dashboards and reports.
+
+### Database Client View
+
+The PostgreSQL database can also be accessed directly using a database client:
+
+![PostgreSQL Database Client](data/screenshots/PostgresDBClientScreenshot.png)
 
 ## License
 
