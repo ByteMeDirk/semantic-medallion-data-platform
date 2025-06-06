@@ -112,15 +112,24 @@ entity_pairs AS (
         AND a.entity_name < b.entity_name
     GROUP BY a.month, entity1, entity2
 )
+WITH ranked_entity_pairs AS (
+    SELECT
+        month,
+        entity1,
+        entity2,
+        co_mention_count,
+        rank() OVER (PARTITION BY month ORDER BY co_mention_count DESC) as rank
+    FROM entity_pairs
+    WHERE (entity1 = {{entity_name}} OR entity2 = {{entity_name}} OR {{entity_name}} = 'All')
+)
 SELECT
     month,
     entity1,
     entity2,
     co_mention_count,
-    rank() OVER (PARTITION BY month ORDER BY co_mention_count DESC) as rank
-FROM entity_pairs
-WHERE (entity1 = {{entity_name}} OR entity2 = {{entity_name}} OR {{entity_name}} = 'All')
-QUALIFY rank <= 10
+    rank
+FROM ranked_entity_pairs
+WHERE rank <= 10
 ORDER BY month, co_mention_count DESC;
 
 -- Title: Entity Seasonal Patterns
