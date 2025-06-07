@@ -1,7 +1,10 @@
 """
-Entity to NewsAPI Sentiment Analysis
-This script creates a gold layer table that maps known entities to NewsAPI sources with sentiment analysis,
-providing a comprehensive view of entities and the sentiment of mentions about them.
+NewsAPI Sentiment Analysis Gold Layer
+This script creates a gold layer table that contains news articles with their sentiment analysis results,
+providing a comprehensive view of the sentiment of news content.
+
+The script joins data from silver.newsapi and silver.newsapi_sentiment tables to create a unified view
+of news articles with their sentiment scores and labels in the gold.entity_to_newsapi_sentiment table.
 """
 import argparse
 
@@ -91,9 +94,9 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    spark = create_spark_session("gld_04_entity_to_newsapi_sentiment")
+    spark = create_spark_session("gld_04_load_newsapi_sentiment")
     parser = argparse.ArgumentParser(
-        description="Create entity to newsapi sentiment analysis table for reporting"
+        description="Create newsapi sentiment analysis table for reporting"
     )
 
     args = parser.parse_args()

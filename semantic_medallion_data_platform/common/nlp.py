@@ -77,5 +77,5 @@ def analyze_sentiment(text: str) -> dict:
         return {"score": float(result["score"]), "label": result["label"]}
     except Exception as e:
         # Log error and return neutral sentiment
-        logging.info(f"Error analyzing sentiment: {e}")
+        logging.error(f"Error analyzing sentiment: {e}")
         return {"score": 0.0, "label": "NEUTRAL"}

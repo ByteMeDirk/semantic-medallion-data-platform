@@ -124,8 +124,8 @@ graph LR
 
 - **Data Processing**: PySpark
 - **Database**: PostgreSQL
-- **Orchestration**: Airflow
 - **Transformation**: pyspark
+- **NLP & Sentiment Analysis**: spaCy, Hugging Face Transformers
 - **Reporting & Visualization**: Metabase
 - **Local Development**: Docker, Poetry
 - **External APIs**: NewsAPI
@@ -217,33 +217,17 @@ This will start:
 - Local PostgreSQL database
 - Metabase (data visualization and reporting tool) accessible at http://localhost:3000
 
-### Using Airflow for Orchestration
+### Running the ETL Pipeline
 
-To use Airflow for orchestrating the ETL pipeline:
-
-```bash
-cd airflow
-./init.sh
-```
-
-This will initialize and start Airflow with an admin user (username: admin, password: admin).
-
-Alternatively, you can start Airflow manually:
+You can run the entire ETL pipeline using the provided shell script:
 
 ```bash
-cd airflow
-docker-compose up -d
+./local_run.sh
 ```
 
-This will start:
+This script will execute all the necessary steps in the correct order, from Bronze to Gold layer.
 
-- Airflow webserver accessible at http://localhost:8080
-- Airflow scheduler for running DAGs
-- Integration with the existing PostgreSQL database
-
-The Airflow setup includes a sample DAG (`medallion_etl_pipeline`) that orchestrates the entire ETL process, from Bronze to Gold layer. You can trigger this DAG manually from the Airflow UI or let it run on its daily schedule.
-
-For more details on the Airflow setup, see [airflow/README.md](airflow/README.md).
+Alternatively, you can run each step individually as described in the sections below.
 
 ### Running Tests
 
@@ -334,6 +318,23 @@ The entity mapping process uses fuzzy matching with RapidFuzz to identify simila
 sources. This enables semantic connections between entities even when there are slight variations in naming or
 formatting.
 
+#### Processing News Articles with Sentiment Analysis
+
+To analyze sentiment in news articles:
+
+```bash
+cd semantic-medallion-data-platform
+python -m semantic_medallion_data_platform.silver.slv_02_transform_sentiment_newsapi
+```
+
+This will:
+
+1. Read news articles from silver.newsapi
+2. Apply sentiment analysis to the content of each article using Hugging Face Transformers
+3. Store the sentiment scores and labels in the silver.newsapi_sentiment table
+
+The sentiment analysis process uses a pre-trained BERT model to classify the sentiment of each article as positive, negative, or neutral, along with a confidence score.
+
 ### Running Gold Layer Processes
 
 #### Creating Entity Affiliations Wide Table
@@ -367,8 +368,23 @@ This will:
 2. Create a wide table with entity information and their mentions in news sources
 3. Store the results in gold.entity_to_newsapi table
 
+#### Creating NewsAPI Sentiment Analysis Table
+
+To create a table with sentiment analysis of news articles:
+
+```bash
+cd semantic-medallion-data-platform
+python -m semantic_medallion_data_platform.gold.gld_04_load_newsapi_sentiment
+```
+
+This will:
+
+1. Join news articles from silver.newsapi with sentiment analysis from silver.newsapi_sentiment
+2. Create a table with article information and their sentiment scores and labels
+3. Store the results in gold.entity_to_newsapi_sentiment table
+
 These gold layer tables provide the foundation for the analytics and visualizations in Metabase dashboards, enabling
-comprehensive entity analysis and news source insights.
+comprehensive entity analysis, news source insights, and sentiment analysis.
 
 ## Contributing
 
