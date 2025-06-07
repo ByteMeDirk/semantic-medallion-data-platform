@@ -1,6 +1,37 @@
-# Semantic Medallion Data Platform
+# Semantic Medallion Data Platform - Research Project (Derby University)
 
-A modern data platform implementing the medallion architecture with local processing.
+## Abstract
+
+This study explores how to improve data lineage, attribute resolution, and contextual understanding across heterogeneous
+data sources by incorporating Natural Language Processing (NLP) technologies into contemporary data processing
+pipelines. Conventional constraints and keys are the mainstays of traditional Extract, Transform, Load (ETL) pipelines
+for attribute resolution; these techniques are insufficiently sophisticated for increasingly complex and varied data
+environments. By creating and putting into practice intelligent data processing pipelines that make use of NLP
+capabilities within a medallion architecture framework, this study overcomes this limitation.
+
+In order to extract individuals, organisations, and locations from real-time news data acquired through NewsAPI, the
+research uses spaCy for named entity recognition as part of a practical implementation approach. In order to replicate
+cloud-native solutions, the system architecture combines Hugging Face NLP models with Apache Spark processing
+capabilities, which are deployed in containerised environments. PostgreSQL databases are used to store the results of
+data processing, and Metabase offers reporting and visualisation features to show how effective the pipeline is.
+
+The approach focusses on creating NLP-enhanced ETL pipelines that extract keywords for topic affiliation, entity
+extraction to create intelligent data lineages across various sources, and sentiment analysis on unstructured blob data.
+Performance evaluation measures improvements in attribute resolution accuracy, processing efficiency, and data lineage
+completeness by contrasting NLP-integrated pipelines with conventional data processing techniques.
+
+Key findings show that while retaining scalable processing performance, NLP integration greatly improves automated data
+attribute resolution capabilities. The study shows quantifiable gains in contextual comprehension and data
+categorisation accuracy, with entity extraction mechanisms effectively creating more intelligent data lineages than
+traditional techniques. However, when integrating NLP processing in production ETL environments, the implications for
+computational overhead must be carefully taken into account.
+
+By offering concrete proof of the advantages of integrating NLP into enterprise data processing systems, this work
+advances the expanding field of AI-enhanced data engineering. By bridging the gap between theoretical AI capabilities
+and practical data engineering challenges, the research provides a repeatable framework for businesses looking to add
+intelligent, context-aware capabilities to their data processing infrastructure.
+
+---
 
 ## Architecture Overview
 
@@ -14,74 +45,72 @@ This project implements a medallion architecture for data lakes, which organizes
 
 ```mermaid
 graph TD
-    %% Bronze Layer
+%% Bronze Layer
     subgraph "Bronze Layer"
         B1[brz_01_extract_newsapi.py]
         B2[brz_01_extract_known_entities.py]
     end
 
-    %% Silver Layer
+%% Silver Layer
     subgraph "Silver Layer"
         S1[slv_02_transform_nlp_known_entities.py]
         S2[slv_02_transform_nlp_newsapi.py]
         S3[slv_03_transform_entity_to_entity_mapping.py]
+        S4[slv_02_transform_sentiment_newsapi.py]
     end
 
-    %% Gold Layer
+%% Gold Layer
     subgraph "Gold Layer"
         G1[gld_04_load_entities.py]
         G2[gld_04_load_newsapi.py]
+        G3[gld_04_load_newsapi_sentiment.py]
     end
 
-    %% Data Sources
+%% Data Sources
     NewsAPI[NewsAPI] --> B1
     KnownEntitiesCSV[Known Entities CSV] --> B2
-
-    %% Bronze to Silver
-    B1 --> |bronze.newsapi| S2
-    B2 --> |bronze.known_entities| S1
-
-    %% Silver Processing
-    S1 --> |silver.known_entities_entities| S3
-    S2 --> |silver.newsapi_entities| S3
-
-    %% Silver to Gold
-    S1 --> |silver.known_entities| G1
-    S1 --> |silver.known_entities| G2
-    S3 --> |silver.entity_to_entity_mapping| G1
-    S3 --> |silver.entity_to_source_mapping| G2
-    S2 --> |silver.newsapi| G2
-
-    %% Gold to Reporting
-    G1 --> |gold.entity_affiliations_complete| Metabase[Metabase Dashboards]
-    G2 --> |gold.entity_to_newsapi| Metabase
-end
+%% Bronze to Silver
+    B1 -->|bronze . newsapi| S2
+    B2 -->|bronze . known_entities| S1
+%% Silver Processing
+    S1 -->|silver . known_entities_entities| S3
+    S2 -->|silver . newsapi_entities| S3
+%% Silver to Gold
+    S1 -->|silver . known_entities| G1
+    S1 -->|silver . known_entities| G2
+    S1 -->|silver . known_entities| G3
+    S3 -->|silver . entity_to_entity_mapping| G1
+    S3 -->|silver . entity_to_source_mapping| G2
+    S3 -->|silver . entity_to_source_mapping| G3
+    S2 -->|silver . newsapi| G2
+    S2 -->|silver . newsapi| G3
+    S2 -->|silver . newsapi| S4
+    S4 -->|silver . newsapi_sentiment| G3
+%% Gold to Reporting
+    G1 -->|gold . entity_affiliations_complete| Metabase[Metabase Dashboards]
+    G2 -->|gold . entity_to_newsapi| Metabase
+    G3 -->|gold . entity_to_newsapi_sentiment| Metabase
 ```
 
 ### System Architecture
 
 ```mermaid
 graph LR
-    %% External Systems
+%% External Systems
     NewsAPI[NewsAPI]
     CSVFiles[CSV Files]
-
-    %% Data Processing
+%% Data Processing
     PySpark[PySpark Processing]
-
-    %% Storage
+%% Storage
     PostgreSQL[PostgreSQL Database]
-
-    %% Visualization
+%% Visualization
     Metabase[Metabase]
-
-    %% Flow
+%% Flow
     NewsAPI --> PySpark
     CSVFiles --> PySpark
     PySpark --> PostgreSQL
     PostgreSQL --> Metabase
-
-    %% Layers within PostgreSQL
+%% Layers within PostgreSQL
     subgraph PostgreSQL
         Bronze[Bronze Schema]
         Silver[Silver Schema]
@@ -95,7 +124,7 @@ graph LR
 
 - **Data Processing**: PySpark
 - **Database**: PostgreSQL
-- **Orchestration**: None
+- **Orchestration**: Airflow
 - **Transformation**: pyspark
 - **Reporting & Visualization**: Metabase
 - **Local Development**: Docker, Poetry
@@ -166,7 +195,8 @@ semantic-medallion-data-platform/
    cp .env.example .env
    ```
 
-   Edit the `.env` file to set your database credentials and other environment variables. Make sure to set your NewsAPI key if you plan to use the news article extraction functionality:
+   Edit the `.env` file to set your database credentials and other environment variables. Make sure to set your NewsAPI
+   key if you plan to use the news article extraction functionality:
    ```
    NEWSAPI_KEY=your_newsapi_key_here
    ```
@@ -183,8 +213,37 @@ docker-compose up -d
 ```
 
 This will start:
+
 - Local PostgreSQL database
 - Metabase (data visualization and reporting tool) accessible at http://localhost:3000
+
+### Using Airflow for Orchestration
+
+To use Airflow for orchestrating the ETL pipeline:
+
+```bash
+cd airflow
+./init.sh
+```
+
+This will initialize and start Airflow with an admin user (username: admin, password: admin).
+
+Alternatively, you can start Airflow manually:
+
+```bash
+cd airflow
+docker-compose up -d
+```
+
+This will start:
+
+- Airflow webserver accessible at http://localhost:8080
+- Airflow scheduler for running DAGs
+- Integration with the existing PostgreSQL database
+
+The Airflow setup includes a sample DAG (`medallion_etl_pipeline`) that orchestrates the entire ETL process, from Bronze to Gold layer. You can trigger this DAG manually from the Airflow UI or let it run on its daily schedule.
+
+For more details on the Airflow setup, see [airflow/README.md](airflow/README.md).
 
 ### Running Tests
 
@@ -204,6 +263,7 @@ python -m semantic_medallion_data_platform.bronze.brz_01_extract_newsapi --days_
 ```
 
 This will:
+
 1. Fetch known entities from the database
 2. Query NewsAPI for articles mentioning each entity
 3. Store the articles in the bronze.newsapi table
@@ -218,6 +278,7 @@ python -m semantic_medallion_data_platform.bronze.brz_01_extract_known_entities 
 ```
 
 This will:
+
 1. Read entity data from CSV files in the specified directory
 2. Process and transform the data
 3. Store the entities in the bronze.known_entities table
@@ -234,6 +295,7 @@ python -m semantic_medallion_data_platform.silver.slv_02_transform_nlp_known_ent
 ```
 
 This will:
+
 1. Copy known entities from bronze.known_entities to silver.known_entities
 2. Extract entities (locations, organizations, persons) from entity descriptions using NLP
 3. Store the extracted entities in the silver.known_entities_entities table
@@ -248,6 +310,7 @@ python -m semantic_medallion_data_platform.silver.slv_02_transform_nlp_newsapi
 ```
 
 This will:
+
 1. Copy news articles from bronze.newsapi to silver.newsapi
 2. Extract entities from article title, description, and content using NLP
 3. Store the extracted entities in the silver.newsapi_entities table
@@ -262,11 +325,14 @@ python -m semantic_medallion_data_platform.silver.slv_03_transform_entity_to_ent
 ```
 
 This will:
+
 1. Create entity-to-source mappings between known_entities_entities and newsapi_entities
 2. Create entity-to-entity mappings within known_entities_entities using fuzzy matching
 3. Store the mappings in silver.entity_to_source_mapping and silver.entity_to_entity_mapping tables
 
-The entity mapping process uses fuzzy matching with RapidFuzz to identify similar entities across different data sources. This enables semantic connections between entities even when there are slight variations in naming or formatting.
+The entity mapping process uses fuzzy matching with RapidFuzz to identify similar entities across different data
+sources. This enables semantic connections between entities even when there are slight variations in naming or
+formatting.
 
 ### Running Gold Layer Processes
 
@@ -280,6 +346,7 @@ python -m semantic_medallion_data_platform.gold.gld_04_load_entities
 ```
 
 This will:
+
 1. Join entity-to-entity mappings with known entities data
 2. Create a wide table with entity information and their fuzzy match affiliations
 3. Create a bidirectional relationship table for complete entity affiliation analysis
@@ -295,19 +362,23 @@ python -m semantic_medallion_data_platform.gold.gld_04_load_newsapi
 ```
 
 This will:
+
 1. Join entity-to-source mappings with known entities and NewsAPI data
 2. Create a wide table with entity information and their mentions in news sources
 3. Store the results in gold.entity_to_newsapi table
 
-These gold layer tables provide the foundation for the analytics and visualizations in Metabase dashboards, enabling comprehensive entity analysis and news source insights.
+These gold layer tables provide the foundation for the analytics and visualizations in Metabase dashboards, enabling
+comprehensive entity analysis and news source insights.
 
 ## Contributing
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull
+requests.
 
 ## Infrastructure Setup with Terraform
 
-This project uses Terraform to manage infrastructure on Digital Ocean, including a PostgreSQL database. Follow these steps to set up the infrastructure:
+This project uses Terraform to manage infrastructure on Digital Ocean, including a PostgreSQL database. Follow these
+steps to set up the infrastructure:
 
 ### Prerequisites
 
@@ -349,28 +420,28 @@ This project uses Terraform to manage infrastructure on Digital Ocean, including
    ```
 
 7. After successful application, Terraform will output connection details for your PostgreSQL database:
-   - Database host
-   - Database port
-   - Database name
-   - Database user
-   - Database password (sensitive)
-   - Database URI (sensitive)
+    - Database host
+    - Database port
+    - Database name
+    - Database user
+    - Database password (sensitive)
+    - Database URI (sensitive)
 
 ### Infrastructure Components
 
 The Terraform configuration creates the following resources on Digital Ocean:
 
 - **PostgreSQL Database Cluster**:
-  - Version: PostgreSQL 15
-  - Size: db-s-1vcpu-1gb (1 vCPU, 1GB RAM)
-  - Region: Configurable (default: London - lon1)
-  - Node Count: 1
+    - Version: PostgreSQL 15
+    - Size: db-s-1vcpu-1gb (1 vCPU, 1GB RAM)
+    - Region: Configurable (default: London - lon1)
+    - Node Count: 1
 
 - **Database**:
-  - Name: semantic_data_platform
+    - Name: semantic_data_platform
 
 - **Database User**:
-  - Name: semantic_app_user
+    - Name: semantic_app_user
 
 ### Managing Infrastructure
 
@@ -391,7 +462,8 @@ For deployment instructions, see [DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 ## Visualization and Reporting
 
-The Semantic Medallion Data Platform includes built-in visualization and reporting capabilities using Metabase. The gold layer tables are designed to be easily consumed by Metabase for creating dashboards and reports.
+The Semantic Medallion Data Platform includes built-in visualization and reporting capabilities using Metabase. The gold
+layer tables are designed to be easily consumed by Metabase for creating dashboards and reports.
 
 ### Metabase Dashboards
 
@@ -436,7 +508,8 @@ The platform provides a rich set of analytics capabilities through SQL queries t
 - **Entity Mention Context Analysis**: Analysis of the context of entity mentions
 - **Entity Type Correlation**: Correlation between different entity types
 
-These queries are stored in the `data/metabase_questions/` directory and can be imported into Metabase for creating custom dashboards and reports.
+These queries are stored in the `data/metabase_questions/` directory and can be imported into Metabase for creating
+custom dashboards and reports.
 
 ### Database Client View
 
