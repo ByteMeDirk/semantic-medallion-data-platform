@@ -11,6 +11,7 @@ The script performs two main operations:
 import argparse
 
 from pyspark.sql import functions as F
+from pyspark.sql.types import StringType, StructField, StructType
 
 from semantic_medallion_data_platform.bronze.brz_01_extract_known_entities import (
     create_spark_session,
@@ -60,10 +61,31 @@ def main() -> None:
         )
 
         # Extract entities from "entity_description" column
-        logger.info("Extracting entities from 'entity_description' column")
-        brz_known_entities_df = brz_known_entities_df.withColumn(
-            "entities", extract_entities_udf(F.col("entity_description"))
+        extracted_entities = []
+        for col in brz_known_entities_df.collect():
+            uri = col["uri"]
+            entity_description = col["entity_description"]
+            entities = extract_entities(entity_description)
+            extracted_entities.append(
+                {
+                    "uri": uri,
+                    "entity_description": entity_description,
+                    "entities": entities,
+                }
+            )
+
+        # Convert the list of dictionaries to a DataFrame
+        brz_known_entities_df = spark.createDataFrame(
+            extracted_entities,
+            schema=StructType(
+                [
+                    StructField("uri", StringType(), True),
+                    StructField("entity_description", StringType(), True),
+                    StructField("entities", ENTITIES_SCHEMA, True),
+                ]
+            ),
         )
+        brz_known_entities_df.show()
 
         # Select relevant columns for processing
         logger.info("Selecting NLP data for exploding")
