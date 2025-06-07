@@ -3,8 +3,12 @@ Test the NLP functions.
 """
 
 from unittest import TestCase
+from unittest.mock import patch
 
-from semantic_medallion_data_platform.common.nlp import extract_entities
+from semantic_medallion_data_platform.common.nlp import (
+    analyze_sentiment,
+    extract_entities,
+)
 
 
 class TestNLP(TestCase):
@@ -67,3 +71,57 @@ class TestNLP(TestCase):
             for entity in result
         )
         self.assertTrue(nyc_found)
+
+    def test_analyze_sentiment_empty(self):
+        """Test sentiment analysis with empty text."""
+        result = analyze_sentiment("")
+        self.assertEqual(result, {"score": 0.0, "label": "NEUTRAL"})
+
+    def test_analyze_sentiment_none(self):
+        """Test sentiment analysis with None."""
+        result = analyze_sentiment(None)
+        self.assertEqual(result, {"score": 0.0, "label": "NEUTRAL"})
+
+    @patch("semantic_medallion_data_platform.common.nlp.sentiment_analyzer")
+    def test_analyze_sentiment_positive(self, mock_sentiment_analyzer):
+        """Test sentiment analysis with positive text."""
+        # Mock the sentiment analyzer to return a positive sentiment
+        mock_sentiment_analyzer.return_value = [{"score": 0.95, "label": "POSITIVE"}]
+
+        text = "I love this product! It's amazing and works perfectly."
+        result = analyze_sentiment(text)
+
+        # Verify the result
+        self.assertEqual(result["label"], "POSITIVE")
+        self.assertGreater(result["score"], 0.9)
+
+        # Verify the sentiment analyzer was called with the correct text
+        mock_sentiment_analyzer.assert_called_once_with(text)
+
+    @patch("semantic_medallion_data_platform.common.nlp.sentiment_analyzer")
+    def test_analyze_sentiment_negative(self, mock_sentiment_analyzer):
+        """Test sentiment analysis with negative text."""
+        # Mock the sentiment analyzer to return a negative sentiment
+        mock_sentiment_analyzer.return_value = [{"score": 0.85, "label": "NEGATIVE"}]
+
+        text = "This is terrible. I'm very disappointed with the quality."
+        result = analyze_sentiment(text)
+
+        # Verify the result
+        self.assertEqual(result["label"], "NEGATIVE")
+        self.assertGreater(result["score"], 0.8)
+
+        # Verify the sentiment analyzer was called with the correct text
+        mock_sentiment_analyzer.assert_called_once_with(text)
+
+    @patch("semantic_medallion_data_platform.common.nlp.sentiment_analyzer")
+    def test_analyze_sentiment_exception(self, mock_sentiment_analyzer):
+        """Test sentiment analysis with an exception."""
+        # Mock the sentiment analyzer to raise an exception
+        mock_sentiment_analyzer.side_effect = Exception("Test exception")
+
+        text = "Some text that will cause an exception."
+        result = analyze_sentiment(text)
+
+        # Verify that we get a neutral sentiment when an exception occurs
+        self.assertEqual(result, {"score": 0.0, "label": "NEUTRAL"})

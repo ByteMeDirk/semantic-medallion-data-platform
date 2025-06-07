@@ -11,6 +11,7 @@ The script performs two main operations:
 import argparse
 
 from pyspark.sql import functions as F
+from pyspark.sql.types import StringType, StructField, StructType
 
 from semantic_medallion_data_platform.bronze.brz_01_extract_known_entities import (
     create_spark_session,
@@ -26,6 +27,9 @@ logger = get_logger(__name__)
 
 # Create a UDF from the extract_entities function
 extract_entities_udf = F.udf(extract_entities, ENTITIES_SCHEMA)
+
+# Define the columns from which to extract entities
+entity_columns = ["title", "description", "content"]
 
 
 def main() -> None:
@@ -61,46 +65,35 @@ def main() -> None:
 
         # Extract entities from "title", "description", and "content" columns
         logger.info("Extracting entities from newsapi articles")
-        entity_columns = ["title", "description", "content"]
-        for col in entity_columns:
-            brz_newsapi_df = brz_newsapi_df.withColumn(
-                f"{col}_entities", extract_entities_udf(F.col(col))
-            )
+        extracted_entities = []
+        for col in brz_newsapi_df.collect():
+            uri = col["uri"]
+            for entity_type in ["title", "description", "content"]:
+                for _ in extract_entities(col[entity_type]):
+                    extracted_entities.append(
+                        {
+                            "uri": uri,
+                            "entity_text": _["text"],
+                            "entity_type": _["type"],
+                        }
+                    )
 
-        # Select relevant columns for processing
-        logger.info("Selecting NLP data for exploding")
-        brz_newsapi_df = brz_newsapi_df.select(
-            "uri", *[f"{col}_entities" for col in entity_columns]
+        # Create a DataFrame from the extracted entities
+        brz_newsapi_df = spark.createDataFrame(
+            extracted_entities,
+            schema=StructType(
+                [
+                    StructField("uri", StringType(), True),
+                    StructField("entity_text", StringType(), True),
+                    StructField("entity_type", StringType(), True),
+                ]
+            ),
         )
+        brz_newsapi_df.show()
 
-        # Explode the entities columns
-        logger.info("Exploding entities columns")
-        for col in [f"{col}_entities" for col in entity_columns]:
-            brz_newsapi_df = brz_newsapi_df.withColumn(col, F.explode(F.col(col)))
-
-        # Flatten the exploded entities
-        logger.info("Flattening exploded entities")
-        brz_newsapi_df = (
-            brz_newsapi_df.select(
-                "uri",
-                F.col("title_entities.text").alias("entity_text"),
-                F.col("title_entities.type").alias("entity_type"),
-            )
-            .union(
-                brz_newsapi_df.select(
-                    "uri",
-                    F.col("description_entities.text").alias("entity_text"),
-                    F.col("description_entities.type").alias("entity_type"),
-                )
-            )
-            .union(
-                brz_newsapi_df.select(
-                    "uri",
-                    F.col("content_entities.text").alias("entity_text"),
-                    F.col("content_entities.type").alias("entity_type"),
-                )
-            )
-        )
+        # The DataFrame already has the columns we need: uri, entity_text, and entity_type
+        # No need for additional selection, exploding, or flattening
+        logger.info("Using existing entity columns")
 
         # Replace the 'GPE' type with 'LOC'
         logger.info("Replacing 'GPE' type with 'LOC'")
