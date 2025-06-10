@@ -36,7 +36,8 @@ The project includes a Docker Compose configuration that sets up a local develop
 - PostgreSQL database
 - Metabase (data visualization and reporting tool)
 
-Metabase provides a user-friendly interface for creating reports and dashboards based on the data in the PostgreSQL database. It can be accessed at http://localhost:3000 after starting the Docker environment.
+Metabase provides a user-friendly interface for creating reports and dashboards based on the data in the PostgreSQL
+database. It can be accessed at http://localhost:3000 after starting the Docker environment.
 
 To start the local environment:
 
@@ -166,6 +167,8 @@ ingest.from_csv("path/to/file.csv", "destination_table")
     - Reads news articles from the bronze.newsapi table
     - Copies the raw articles to the silver.newsapi table
     - Uses spaCy NLP to extract named entities (locations, organizations, persons) from article text
+      (an academic study in the `academic_study` directory demonstrated spaCy's strong NER performance with an overall
+      F1-score of 0.91)
     - Normalizes entity types (e.g., converts 'GPE' to 'LOC')
     - Removes duplicate entities
     - Stores extracted entities in the silver.newsapi_entities table
@@ -191,7 +194,6 @@ from semantic_medallion_data_platform.gold import aggregate
 # Aggregate data from Silver to Gold
 aggregate.silver_to_gold("source_table", "destination_table")
 ```
-
 
 ## Troubleshooting
 

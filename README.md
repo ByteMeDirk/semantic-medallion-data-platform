@@ -10,7 +10,7 @@ environments. By creating and putting into practice intelligent data processing 
 capabilities within a medallion architecture framework, this study overcomes this limitation.
 
 In order to extract individuals, organisations, and locations from real-time news data acquired through NewsAPI, the
-research uses spaCy for named entity recognition as part of a practical implementation approach. In order to replicate
+research uses spaCy for named entity recognition as part of a practical implementation approach. An academic study was conducted to evaluate spaCy's performance for NER, which demonstrated strong performance with an overall F1-score of 0.91 (detailed results available in the `academic_study` directory). In order to replicate
 cloud-native solutions, the system architecture combines Hugging Face NLP models with Apache Spark processing
 capabilities, which are deployed in containerised environments. PostgreSQL databases are used to store the results of
 data processing, and Metabase offers reporting and visualisation features to show how effective the pipeline is.
@@ -472,9 +472,9 @@ The Terraform configuration creates the following resources on Digital Ocean:
   terraform destroy
   ```
 
-For more detailed information about the infrastructure setup, see [INFRASTRUCTURE.md](docs/INFRASTRUCTURE.md).
+For more detailed information about the infrastructure setup, see [INFRASTRUCTURE.md](docs/infrastructure.md).
 
-For deployment instructions, see [DEPLOYMENT.md](docs/DEPLOYMENT.md).
+For deployment instructions, see [DEPLOYMENT.md](docs/deployment.md).
 
 ## Visualization and Reporting
 

@@ -29,6 +29,7 @@ The Bronze layer contains raw data ingested from various sources with minimal or
 - PostgreSQL schema: `bronze`
 
 ### Data Sources:
+
 - NewsAPI articles
 - Known entities (organizations, locations, persons)
 
@@ -52,7 +53,9 @@ The Silver layer contains cleansed, validated, and transformed data that is read
 - PostgreSQL schema: `silver`
 
 ### Processes:
-- Entity extraction from news articles using spaCy
+
+- Entity extraction from news articles using spaCy (an academic study in the `academic_study` directory demonstrated
+  spaCy's strong NER performance with an overall F1-score of 0.91)
 - Entity normalization and deduplication
 - Entity linking with known entities
 
