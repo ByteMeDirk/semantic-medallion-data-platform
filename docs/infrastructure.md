@@ -2,7 +2,8 @@
 
 ## Overview
 
-This document provides detailed information about the infrastructure setup for the Semantic Medallion Data Platform. The infrastructure is managed using Terraform and is hosted on Digital Ocean.
+This document provides detailed information about the infrastructure setup for the Semantic Medallion Data Platform. The
+infrastructure is managed using Terraform and is hosted on Digital Ocean.
 
 ## Infrastructure Components
 
@@ -77,7 +78,7 @@ resource "digitalocean_database_cluster" "postgres" {
   name       = "${var.project_name}-db-${var.environment}"
   engine     = "pg"
   version    = "15"
-  size       = "db-s-1vcpu-1gb"  # Smallest available size ($15/month)
+  size = "db-s-1vcpu-1gb"  # Smallest available size ($15/month)
   region     = var.region
   node_count = 1
 
@@ -125,7 +126,7 @@ variable "environment" {
   type        = string
   default     = "dev"
   validation {
-    condition     = contains(["dev", "staging", "prod"], var.environment)
+    condition = contains(["dev", "staging", "prod"], var.environment)
     error_message = "Environment must be one of: dev, staging, prod."
   }
 }
@@ -229,14 +230,14 @@ Total estimated cost: $15/month
 ### Common Issues
 
 1. **Terraform initialization fails**:
-   - Ensure you have the correct version of Terraform installed
-   - Check your internet connection
+    - Ensure you have the correct version of Terraform installed
+    - Check your internet connection
 
 2. **Digital Ocean API token issues**:
-   - Verify that your API token is correct and has the necessary permissions
-   - Ensure the token is properly set in the terraform.tfvars file
+    - Verify that your API token is correct and has the necessary permissions
+    - Ensure the token is properly set in the terraform.tfvars file
 
 3. **Database connection issues**:
-   - Check that the database cluster is running
-   - Verify that you're using the correct connection details
-   - Ensure your firewall allows connections to the database port
+    - Check that the database cluster is running
+    - Verify that you're using the correct connection details
+    - Ensure your firewall allows connections to the database port
