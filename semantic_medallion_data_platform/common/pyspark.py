@@ -18,10 +18,13 @@ def create_spark_session(app_name: str) -> SparkSession:
     Returns:
         A configured SparkSession object.
     """
+
     return (
         SparkSession.builder.appName(app_name)
-        .master("local[*]")  # Use local mode with all available cores
+        .master("local[*]")
         .config("spark.jars.packages", "org.postgresql:postgresql:42.6.0")
+        .config("spark.sql.adaptive.enabled", "true")
+        .config("spark.sql.adaptive.coalescePartitions.enabled", "true")
         .getOrCreate()
     )
 
