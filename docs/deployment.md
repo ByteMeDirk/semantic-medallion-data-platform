@@ -2,7 +2,9 @@
 
 ## Overview
 
-This document provides instructions for deploying the Semantic Medallion Data Platform to Digital Ocean. The deployment process involves setting up the infrastructure using Terraform and then deploying the application to use the provisioned resources.
+This document provides instructions for deploying the Semantic Medallion Data Platform to Digital Ocean. The deployment
+process involves setting up the infrastructure using Terraform and then deploying the application to use the provisioned
+resources.
 
 ## Prerequisites
 
@@ -51,7 +53,8 @@ First, set up the infrastructure using Terraform:
    terraform apply tfplan
    ```
 
-7. After successful application, Terraform will output connection details for your PostgreSQL database. Save these details for the next step.
+7. After successful application, Terraform will output connection details for your PostgreSQL database. Save these
+   details for the next step.
 
 ### Step 2: Configure Application Environment
 
@@ -106,7 +109,8 @@ python -m semantic_medallion_data_platform.silver.slv_03_transform_entity_to_ent
 
 ## Deployment Environments
 
-The infrastructure can be deployed to different environments by setting the `environment` variable in `terraform.tfvars`:
+The infrastructure can be deployed to different environments by setting the `environment` variable in
+`terraform.tfvars`:
 
 - **Development**: `environment = "dev"`
 - **Staging**: `environment = "staging"`
@@ -173,19 +177,19 @@ For major version upgrades, you will need to create a new database cluster and m
 ### Common Deployment Issues
 
 1. **Database connection issues**:
-   - Verify that the database cluster is running
-   - Check that you're using the correct connection details in your `.env` file
-   - Ensure your firewall allows connections to the database port
+    - Verify that the database cluster is running
+    - Check that you're using the correct connection details in your `.env` file
+    - Ensure your firewall allows connections to the database port
 
 2. **Application errors**:
-   - Check the application logs for error messages
-   - Verify that all required environment variables are set
-   - Ensure that the database schemas and tables are properly created
+    - Check the application logs for error messages
+    - Verify that all required environment variables are set
+    - Ensure that the database schemas and tables are properly created
 
 3. **Infrastructure provisioning issues**:
-   - Check the Terraform logs for error messages
-   - Verify that your Digital Ocean API token has the necessary permissions
-   - Ensure that you have sufficient quota in your Digital Ocean account
+    - Check the Terraform logs for error messages
+    - Verify that your Digital Ocean API token has the necessary permissions
+    - Ensure that you have sufficient quota in your Digital Ocean account
 
 ## Rollback Procedure
 

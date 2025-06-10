@@ -137,27 +137,30 @@ Location entity recognition demonstrates **strong** results:
 The testing pipeline generated several visualizations to aid in understanding the model's performance:
 
 1. **Entity Count Comparison**: Bar chart comparing ground truth vs. predicted entity counts across entity types (e.g.,
-   `entity_count_comparison diagram` shows that the predicted counts for PERSON and ORG are slightly lower than the ground
+   `entity_count_comparison diagram` shows that the predicted counts for PERSON and ORG are slightly lower than the
+   ground
    truth, while LOC is very close.)
-   - ![entity_count_comparison.png](plots/entity_count_comparison.png)
+    - ![entity_count_comparison.png](plots/entity_count_comparison.png)
 2. **Performance Metrics Heatmap**: Visual representation of precision, recall, and F1-score for each entity type (e.g.,
-   `performance_metrics_heatmap diagram` clearly shows the high precision for PERSON and the comparatively lower recall for
+   `performance_metrics_heatmap diagram` clearly shows the high precision for PERSON and the comparatively lower recall
+   for
    ORG.)
-   - ![performance_metrics_heatmap.png](plots/performance_metrics_heatmap.png)
+    - ![performance_metrics_heatmap.png](plots/performance_metrics_heatmap.png)
 3. **Entity Recognition Accuracy**: Line chart showing recognition accuracy across the dataset (e.g.,
    `entity_recognition_accuracy diagram` visually represents the accuracy for each entity type across the 1000 samples,
    indicating some variability but generally high accuracy.)
-   - ![entity_recognition_accuracy.png](plots/entity_recognition_accuracy.png)
+    - ![entity_recognition_accuracy.png](plots/entity_recognition_accuracy.png)
 4. **Performance Matrix**: Combined visualization of overall metrics with color-coded performance indicators (e.g.,
    `performance_matrix diagram` provides an overall P=0.96, R=0.89, F1=0.91, alongside the per-entity scores.)
-   - ![performance_matrix.png](plots/performance_matrix.png)
+    - ![performance_matrix.png](plots/performance_matrix.png)
 5. **Performance Summary Radar Chart**: Radar visualization showing balanced performance across metrics and entity
-   types (e.g., `performance_summary_radar diagram` illustrates the shape of the performance for each entity type, showing
+   types (e.g., `performance_summary_radar diagram` illustrates the shape of the performance for each entity type,
+   showing
    that PERSON and LOC have more balanced and larger areas than ORG.)
-   - ![performance_summary_radar.png](plots/performance_summary_radar.png)
+    - ![performance_summary_radar.png](plots/performance_summary_radar.png)
 6. **Performance Summary Bar Chart**: Bar chart representation of precision, recall, and F1-score by entity type (e.g.,
    `performance_summary_bar diagram` is a clear and direct summary of the numerical metrics presented in the table).
-   - ![performance_summary_bar.png](plots/performance_summary_bar.png)
+    - ![performance_summary_bar.png](plots/performance_summary_bar.png)
 
 These visualizations provide multi-dimensional insights into the model's strengths and weaknesses across different
 entity types and evaluation metrics.
@@ -252,6 +255,3 @@ The visualizations and metrics provide a comprehensive understanding of the mode
 highlighting both strengths and areas for optimization. The recommendations outlined aim to enhance the NER component's
 accuracy and reliability, which will directly impact the quality of entity data flowing through the Semantic Medallion
 Data Platform.
-
-Future work should focus on implementing the recommended optimizations and conducting comparative analysis to measure
-improvements in entity recognition performance.
