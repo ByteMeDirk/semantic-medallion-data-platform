@@ -205,7 +205,9 @@ semantic-medallion-data-platform/
 
 ### Local Development
 
-Start the local development environment:
+#### Option 1: Standard Environment
+
+Start the standard local development environment:
 
 ```bash
 cd docker
@@ -216,6 +218,43 @@ This will start:
 
 - Local PostgreSQL database
 - Metabase (data visualization and reporting tool) accessible at http://localhost:3000
+
+#### Option 2: PySpark Jupyter Lab Environment
+
+For interactive data analysis and development with PySpark, use the docker-compose.yml file at the root of the project:
+
+```bash
+docker-compose up -d
+```
+
+This will start:
+
+- Jupyter Lab with PySpark (accessible at http://localhost:8888)
+- Local PostgreSQL database
+- Metabase (data visualization and reporting tool) accessible at http://localhost:3000
+
+When using Jupyter Lab:
+- Your project files are available in the `/home/jovyan/work` directory
+- PySpark is pre-configured and ready to use
+- You can create new notebooks or open existing ones
+
+Example PySpark usage in a Jupyter notebook:
+
+```python
+from pyspark.sql import SparkSession
+
+# Create a Spark session
+spark = SparkSession.builder \
+    .appName("Example") \
+    .getOrCreate()
+
+# Create a simple DataFrame
+data = [("Alice", 34), ("Bob", 45), ("Charlie", 29)]
+df = spark.createDataFrame(data, ["Name", "Age"])
+
+# Show the DataFrame
+df.show()
+```
 
 ### Running the ETL Pipeline
 
