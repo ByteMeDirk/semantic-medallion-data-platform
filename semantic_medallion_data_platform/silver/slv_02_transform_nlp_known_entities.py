@@ -19,14 +19,14 @@ from semantic_medallion_data_platform.bronze.brz_01_extract_known_entities impor
 from semantic_medallion_data_platform.common.log_handler import get_logger
 from semantic_medallion_data_platform.common.nlp import (
     ENTITIES_SCHEMA,
-    extract_entities,
+    extract_entities_spacy,
 )
 from semantic_medallion_data_platform.config.env import get_db_config
 
 logger = get_logger(__name__)
 
 # Create a UDF from the extract_entities function
-extract_entities_udf = F.udf(extract_entities, ENTITIES_SCHEMA)
+extract_entities_udf = F.udf(extract_entities_spacy, ENTITIES_SCHEMA)
 
 
 def main() -> None:
@@ -65,7 +65,7 @@ def main() -> None:
         for col in brz_known_entities_df.collect():
             uri = col["uri"]
             entity_description = col["entity_description"]
-            entities = extract_entities(entity_description)
+            entities = extract_entities_spacy(entity_description)
             extracted_entities.append(
                 {
                     "uri": uri,

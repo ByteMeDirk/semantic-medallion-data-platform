@@ -19,14 +19,14 @@ from semantic_medallion_data_platform.bronze.brz_01_extract_known_entities impor
 from semantic_medallion_data_platform.common.log_handler import get_logger
 from semantic_medallion_data_platform.common.nlp import (
     ENTITIES_SCHEMA,
-    extract_entities,
+    extract_entities_spacy,
 )
 from semantic_medallion_data_platform.config.env import get_db_config
 
 logger = get_logger(__name__)
 
 # Create a UDF from the extract_entities function
-extract_entities_udf = F.udf(extract_entities, ENTITIES_SCHEMA)
+extract_entities_udf = F.udf(extract_entities_spacy, ENTITIES_SCHEMA)
 
 # Define the columns from which to extract entities
 entity_columns = ["title", "description", "content"]
@@ -69,7 +69,7 @@ def main() -> None:
         for col in brz_newsapi_df.collect():
             uri = col["uri"]
             for entity_type in ["title", "description", "content"]:
-                for _ in extract_entities(col[entity_type]):
+                for _ in extract_entities_spacy(col[entity_type]):
                     extracted_entities.append(
                         {
                             "uri": uri,
