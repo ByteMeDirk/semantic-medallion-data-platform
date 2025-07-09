@@ -7,16 +7,35 @@ import logging
 
 import spacy
 from pyspark.sql.types import ArrayType, FloatType, StringType, StructField, StructType
-from transformers import AutoModelForSequenceClassification, AutoTokenizer, pipeline
+from transformers import (
+    AutoModelForSequenceClassification,
+    AutoModelForTokenClassification,
+    AutoTokenizer,
+    pipeline,
+)
 
 # Load spaCy NLP model
 NLP = spacy.load("en_core_web_lg")
 
 # Load BERT model for sentiment analysis
-MODEL_NAME = "tabularisai/multilingual-sentiment-analysis"  # Standard sentiment model
-tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME)
-sentiment_analyzer = pipeline("text-classification", model=model, tokenizer=tokenizer)
+SENTIMENT_MODEL_NAME = (
+    "tabularisai/multilingual-sentiment-analysis"  # Standard sentiment model
+)
+BERT_NER_MODEL_NAME = (
+    "dbmdz/bert-large-cased-finetuned-conll03-english"  # Standard NER model
+)
+SENTIMENT_TOKENIZER = AutoTokenizer.from_pretrained(SENTIMENT_MODEL_NAME)
+SENTIMENT_MODEL = AutoModelForSequenceClassification.from_pretrained(
+    SENTIMENT_MODEL_NAME
+)
+SENTIMENT_ANALYZER = pipeline(
+    "text-classification", model=SENTIMENT_MODEL, tokenizer=SENTIMENT_TOKENIZER
+)
+BERT_TOKENIZER = AutoTokenizer.from_pretrained(BERT_NER_MODEL_NAME)
+BERT_MODEL = AutoModelForTokenClassification.from_pretrained(BERT_NER_MODEL_NAME)
+BERT_NER_PIPELINE = pipeline(
+    "ner", model=BERT_MODEL, tokenizer=BERT_TOKENIZER, aggregation_strategy="simple"
+)
 
 # Define schema for entity extraction
 ENTITY_STRUCT = StructType(
@@ -31,7 +50,7 @@ SENTIMENT_STRUCT = StructType(
 )
 
 
-def extract_entities(text: str) -> list:
+def extract_entities_spacy(text: str) -> list:
     """
     Extract location, organization, and person entities from text using spaCy.
 
@@ -51,6 +70,40 @@ def extract_entities(text: str) -> list:
         if ent.label_ in ("LOC", "GPE", "ORG", "PERSON")
     ]
     return entities
+
+
+def extract_entities_bert(text: str) -> list:
+    # Updated mapping to handle actual BERT output labels
+    label_mapping = {
+        "PER": "PERSON",
+        "PERSON": "PERSON",
+        "LOC": "LOC",
+        "LOCATION": "LOC",
+        "ORG": "ORG",
+        "ORGANIZATION": "ORG",
+        "MISC": "MISC",
+    }
+
+    if not text:
+        return []
+
+    entities = BERT_NER_PIPELINE(text)
+    mapped_entities = []
+
+    for ent in entities:
+        entity_group = ent.get("entity_group", "")
+        mapped_type = label_mapping.get(entity_group, entity_group)
+
+        # Only include entities we want to evaluate
+        if mapped_type in ["PERSON", "ORG", "LOC"]:
+            mapped_entities.append(
+                {
+                    "text": ent["word"],
+                    "type": mapped_type,
+                }
+            )
+
+    return mapped_entities
 
 
 def analyze_sentiment(text: str) -> dict:
@@ -73,7 +126,7 @@ def analyze_sentiment(text: str) -> dict:
 
     try:
         # Run sentiment analysis
-        result = sentiment_analyzer(text)[0]
+        result = SENTIMENT_ANALYZER(text)[0]
         return {"score": float(result["score"]), "label": result["label"]}
     except Exception as e:
         # Log error and return neutral sentiment

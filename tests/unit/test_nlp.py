@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 from semantic_medallion_data_platform.common.nlp import (
     analyze_sentiment,
-    extract_entities,
+    extract_entities_spacy,
 )
 
 
@@ -16,18 +16,18 @@ class TestNLP(TestCase):
 
     def test_extract_entities_empty(self):
         """Test entity extraction with empty text."""
-        result = extract_entities("")
+        result = extract_entities_spacy("")
         self.assertEqual(result, [])
 
     def test_extract_entities_none(self):
         """Test entity extraction with None."""
-        result = extract_entities(None)
+        result = extract_entities_spacy(None)
         self.assertEqual(result, [])
 
     def test_extract_entities_person(self):
         """Test entity extraction with person entity."""
         text = "Tim Cook is the CEO of Apple Inc."
-        result = extract_entities(text)
+        result = extract_entities_spacy(text)
 
         # Check that we found at least one person entity
         person_entities = [entity for entity in result if entity["type"] == "PERSON"]
@@ -43,7 +43,7 @@ class TestNLP(TestCase):
     def test_extract_entities_organization(self):
         """Test entity extraction with organization entity."""
         text = "Apple Inc. is a technology company based in Cupertino."
-        result = extract_entities(text)
+        result = extract_entities_spacy(text)
 
         # Check that we found at least one organization entity
         org_entities = [entity for entity in result if entity["type"] == "ORG"]
@@ -59,7 +59,7 @@ class TestNLP(TestCase):
     def test_extract_entities_location(self):
         """Test entity extraction with location entity."""
         text = "New York City is the most populous city in the United States."
-        result = extract_entities(text)
+        result = extract_entities_spacy(text)
 
         # Check that we found at least one location entity
         loc_entities = [entity for entity in result if entity["type"] in ("LOC", "GPE")]

@@ -1,38 +1,5 @@
 # Semantic Medallion Data Platform - Research Project (Derby University)
 
-## Abstract
-
-This study explores how to improve data lineage, attribute resolution, and contextual understanding across heterogeneous
-data sources by incorporating Natural Language Processing (NLP) technologies into contemporary data processing
-pipelines. Conventional constraints and keys are the mainstays of traditional Extract, Transform, Load (ETL) pipelines
-for attribute resolution; these techniques are insufficiently sophisticated for increasingly complex and varied data
-environments. By creating and putting into practice intelligent data processing pipelines that make use of NLP
-capabilities within a medallion architecture framework, this study overcomes this limitation.
-
-In order to extract individuals, organisations, and locations from real-time news data acquired through NewsAPI, the
-research uses spaCy for named entity recognition as part of a practical implementation approach. An academic study was conducted to evaluate spaCy's performance for NER, which demonstrated strong performance with an overall F1-score of 0.91 (detailed results available in the `academic_study` directory). In order to replicate
-cloud-native solutions, the system architecture combines Hugging Face NLP models with Apache Spark processing
-capabilities, which are deployed in containerised environments. PostgreSQL databases are used to store the results of
-data processing, and Metabase offers reporting and visualisation features to show how effective the pipeline is.
-
-The approach focusses on creating NLP-enhanced ETL pipelines that extract keywords for topic affiliation, entity
-extraction to create intelligent data lineages across various sources, and sentiment analysis on unstructured blob data.
-Performance evaluation measures improvements in attribute resolution accuracy, processing efficiency, and data lineage
-completeness by contrasting NLP-integrated pipelines with conventional data processing techniques.
-
-Key findings show that while retaining scalable processing performance, NLP integration greatly improves automated data
-attribute resolution capabilities. The study shows quantifiable gains in contextual comprehension and data
-categorisation accuracy, with entity extraction mechanisms effectively creating more intelligent data lineages than
-traditional techniques. However, when integrating NLP processing in production ETL environments, the implications for
-computational overhead must be carefully taken into account.
-
-By offering concrete proof of the advantages of integrating NLP into enterprise data processing systems, this work
-advances the expanding field of AI-enhanced data engineering. By bridging the gap between theoretical AI capabilities
-and practical data engineering challenges, the research provides a repeatable framework for businesses looking to add
-intelligent, context-aware capabilities to their data processing infrastructure.
-
----
-
 ## Architecture Overview
 
 This project implements a medallion architecture for data lakes, which organizes data into three layers:
